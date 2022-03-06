@@ -458,6 +458,20 @@ class AwsXrayPropagatorTest {
         .isSameAs(SpanContext.getInvalid());
   }
 
+  @Test
+  void extract_actualTraceId() {
+    Map<String, String> carrier = new LinkedHashMap<>();
+    // Actual header captured:
+    carrier.put("X-Amzn-Trace-Id", "Root=1-622422bf-59625fe25708d4660735d8ef");
+
+    Context context = xrayPropagator.extract(Context.current(), carrier, getter);
+    assertThat(context).isNotEqualTo(Context.root());
+
+    SpanContext spanContext = getSpanContext(context);
+    assertThat(spanContext).satisfies(SpanContext::isValid);
+    assertThat(spanContext).isNotEqualTo(SpanContext.getInvalid());
+  }
+
   private static Context withSpanContext(SpanContext spanContext, Context context) {
     return context.with(Span.wrap(spanContext));
   }
